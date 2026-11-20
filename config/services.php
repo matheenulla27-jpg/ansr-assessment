@@ -43,4 +43,6 @@ return [
         'stale_ttl' => (int) env('FAKE_STORE_STALE_TTL', 86400),
     ],
 
+    'sales_inbox' => env('SALES_INBOX', 'sales@example.com'),
+
 ];

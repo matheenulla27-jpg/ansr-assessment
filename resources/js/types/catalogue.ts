@@ -37,6 +37,18 @@ export interface SearchPageProps {
     products: Product[];
 }
 
+export interface ProductDetailPageProps {
+    product: Product;
+}
+
+export interface EnquiryFormData {
+    product_id: number;
+    name: string;
+    email: string;
+    phone: string;
+    message: string;
+}
+
 export interface UnavailablePageProps {
     message: string;
 }
