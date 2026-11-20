@@ -22,7 +22,7 @@ export interface CategoryNavigationItem {
     href: string;
 }
 
-export interface SharedPageProps {
+export interface SharedPageProps extends Record<string, unknown> {
     categories: CategoryNavigationItem[];
 }
 

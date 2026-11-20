@@ -4,9 +4,10 @@ import type { EnquiryFormData } from '../../types/catalogue';
 
 interface EnquiryFormProps {
     productId: number;
+    onClose: () => void;
 }
 
-export default function EnquiryForm({ productId }: EnquiryFormProps) {
+export default function EnquiryForm({ productId, onClose }: EnquiryFormProps) {
     const form = useForm<EnquiryFormData>({
         product_id: productId,
         name: '',
@@ -22,12 +23,25 @@ export default function EnquiryForm({ productId }: EnquiryFormProps) {
 
     if (form.wasSuccessful) {
         return (
-            <p
+            <div
                 role="status"
-                className="rounded-lg border border-green-200 bg-green-50 p-4 text-green-900"
+                className="space-y-5 rounded-lg border border-green-200 bg-green-50 p-5 text-green-900"
             >
-                Thank you. Your enquiry has been sent.
-            </p>
+                <div className="space-y-2">
+                    <h3 className="text-xl font-semibold">Thank you</h3>
+                    <p>Your enquiry has been sent.</p>
+                </div>
+                <button
+                    type="button"
+                    onClick={() => {
+                        form.resetAndClearErrors();
+                        onClose();
+                    }}
+                    className="rounded-lg bg-slate-900 px-5 py-3 font-medium text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+                >
+                    Close
+                </button>
+            </div>
         );
     }
 
