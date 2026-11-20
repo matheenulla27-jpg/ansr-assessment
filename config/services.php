@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
 
     /*
@@ -33,6 +35,12 @@ return [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
+    ],
+
+    'fake_store' => [
+        'base_url' => env('FAKE_STORE_API_URL', 'https://fakestoreapi.com'),
+        'cache_ttl' => (int) env('FAKE_STORE_CACHE_TTL', 3600),
+        'stale_ttl' => (int) env('FAKE_STORE_STALE_TTL', 86400),
     ],
 
 ];
