@@ -27,26 +27,28 @@ final class FakeStoreProductRepository implements ProductRepositoryInterface
     public function all(): array
     {
         try {
-            /** @var list<ProductData> $products */
-            $products = Cache::remember(
+            $cachedProducts = Cache::remember(
                 self::FRESH_CACHE_KEY,
                 (int) config('services.fake_store.cache_ttl', 3600),
                 fn (): array => $this->fetchProducts(),
             );
 
-            return $products;
+            return $this->hydrateProducts($cachedProducts);
         } catch (ConnectionException|RequestException|InvalidArgumentException|UnexpectedValueException $exception) {
+            Cache::forget(self::FRESH_CACHE_KEY);
             $staleProducts = Cache::get(self::STALE_CACHE_KEY);
 
-            if ($this->isValidProductList($staleProducts)) {
-                Log::warning('Fake Store API unavailable; serving stale product data.', [
-                    'exception' => $exception::class,
-                ]);
-
-                return $staleProducts;
+            try {
+                $products = $this->hydrateProducts($staleProducts);
+            } catch (InvalidArgumentException|UnexpectedValueException) {
+                throw new ProductSourceUnavailable('Product data is unavailable and no valid cached copy exists.', $exception->getCode(), previous: $exception);
             }
 
-            throw new ProductSourceUnavailable('Product data is unavailable and no valid cached copy exists.', $exception->getCode(), previous: $exception);
+            Log::warning('Fake Store API unavailable; serving stale product data.', [
+                'exception' => $exception::class,
+            ]);
+
+            return $products;
         }
     }
 
@@ -62,7 +64,15 @@ final class FakeStoreProductRepository implements ProductRepositoryInterface
     }
 
     /**
-     * @return list<ProductData>
+     * @return list<array{
+     *     id: int,
+     *     title: string,
+     *     description: string,
+     *     category: string,
+     *     price: float,
+     *     image: string,
+     *     rating: array{rate: float, count: int}
+     * }>
      *
      * @throws ConnectionException
      * @throws RequestException
@@ -93,30 +103,39 @@ final class FakeStoreProductRepository implements ProductRepositoryInterface
             $products[] = ProductData::fromArray($product);
         }
 
+        $normalizedProducts = array_map(
+            static fn (ProductData $product): array => $product->toArray(),
+            $products,
+        );
+
         Cache::put(
             self::STALE_CACHE_KEY,
-            $products,
+            $normalizedProducts,
             (int) config('services.fake_store.stale_ttl', 86400),
         );
 
-        return $products;
+        return $normalizedProducts;
     }
 
     /**
      * @return list<ProductData>
      */
-    private function isValidProductList(mixed $products): bool
+    private function hydrateProducts(mixed $products): array
     {
         if (! is_array($products) || ! array_is_list($products)) {
-            return false;
+            throw new UnexpectedValueException('Cached product data is not a valid list.');
         }
+
+        $hydratedProducts = [];
 
         foreach ($products as $product) {
-            if (! $product instanceof ProductData) {
-                return false;
+            if (! is_array($product)) {
+                throw new UnexpectedValueException('Cached product data contains an invalid product.');
             }
+
+            $hydratedProducts[] = ProductData::fromArray($product);
         }
 
-        return true;
+        return $hydratedProducts;
     }
 }

@@ -55,6 +55,35 @@ it('retrieves products from the Fake Store endpoint and reuses the fresh cache',
     Http::assertSent(fn (Request $request): bool => $request->url() === 'https://fakestoreapi.com/products');
 });
 
+it('rehydrates products from serialized file cache entries', function (): void {
+    config()->set('cache.default', 'file');
+
+    $fileCache = Cache::store('file');
+    $fileCache->forget('fake_store.products.fresh');
+    $fileCache->forget('fake_store.products.stale');
+
+    Http::preventStrayRequests();
+    Http::fake([
+        'fakestoreapi.com/products' => Http::response([fakeStoreProduct()], 200),
+    ]);
+
+    try {
+        $firstRead = (new FakeStoreProductRepository)->all();
+        $cachedProducts = $fileCache->get('fake_store.products.fresh');
+        $secondRead = (new FakeStoreProductRepository)->all();
+
+        expect($cachedProducts)->toBe([fakeStoreProduct()])
+            ->and($secondRead)->toHaveCount(1)
+            ->and($secondRead[0])->toBeInstanceOf(ProductData::class)
+            ->and($secondRead[0])->toEqual($firstRead[0]);
+
+        Http::assertSentCount(1);
+    } finally {
+        $fileCache->forget('fake_store.products.fresh');
+        $fileCache->forget('fake_store.products.stale');
+    }
+});
+
 it('finds an existing product and returns null for a missing ID', function () {
     Http::preventStrayRequests();
     Http::fake([
