@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Services\ProductCatalogueService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
+    public function __construct(private readonly ProductCatalogueService $catalogue) {}
+
     /**
      * The root template that's loaded on the first page visit.
      *
@@ -39,7 +42,13 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            //
+            'categories' => array_map(
+                static fn (string $category): array => [
+                    'name' => $category,
+                    'href' => route('categories.show', ['category' => $category]),
+                ],
+                $this->catalogue->categories(),
+            ),
         ];
     }
 }

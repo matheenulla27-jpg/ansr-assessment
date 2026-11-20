@@ -17,6 +17,21 @@ export interface HomePageProps {
     featuredProducts: Product[];
 }
 
+export interface CategoryNavigationItem {
+    name: string;
+    href: string;
+}
+
+export interface SharedPageProps {
+    categories: CategoryNavigationItem[];
+}
+
+export interface CategoryPageProps {
+    category: string;
+    topRated: Product[];
+    additionalProducts: Product[];
+}
+
 export interface UnavailablePageProps {
     message: string;
 }
