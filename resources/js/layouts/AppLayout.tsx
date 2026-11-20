@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import CategoryNavigation from '../components/catalogue/CategoryNavigation';
+import SearchBar from '../components/catalogue/SearchBar';
 import type { SharedPageProps } from '../types/catalogue';
 
 interface AppLayoutProps {
@@ -27,6 +28,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
                         Discover customer favourites
                     </span>
                 </nav>
+                <div className="mx-auto max-w-7xl px-4 pb-5 sm:px-6 lg:px-8">
+                    <SearchBar />
+                </div>
                 <CategoryNavigation categories={categories} />
             </header>
             <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">

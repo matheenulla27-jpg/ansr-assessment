@@ -32,6 +32,11 @@ export interface CategoryPageProps {
     additionalProducts: Product[];
 }
 
+export interface SearchPageProps {
+    query: string;
+    products: Product[];
+}
+
 export interface UnavailablePageProps {
     message: string;
 }

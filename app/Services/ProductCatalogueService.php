@@ -50,6 +50,33 @@ final readonly class ProductCatalogueService
     }
 
     /**
+     * @return list<array{
+     *     id: int,
+     *     title: string,
+     *     description: string,
+     *     category: string,
+     *     price: float,
+     *     image: string,
+     *     rating: array{rate: float, count: int}
+     * }>
+     */
+    public function search(string $query): array
+    {
+        $query = mb_strtolower(trim($query));
+        $products = array_values(array_filter(
+            $this->products->all(),
+            static fn (ProductData $product): bool => mb_stripos($product->title, $query) !== false
+                || mb_stripos($product->description, $query) !== false
+                || mb_stripos($product->category, $query) !== false,
+        ));
+
+        return array_map(
+            static fn (ProductData $product): array => $product->toArray(),
+            $this->sortByRating($products),
+        );
+    }
+
+    /**
      * @return array{
      *     topRated: list<array{
      *         id: int,
