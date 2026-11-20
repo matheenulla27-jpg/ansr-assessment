@@ -14,6 +14,7 @@
         "laravel/tinker": "^3.0"
     },
     "require-dev": {
+        "driftingly/rector-laravel": "^2.7",
         "fakerphp/faker": "^1.23",
         "laravel/boost": "^2.2",
         "laravel/pail": "^1.2.5",
@@ -44,6 +45,15 @@
             "@php artisan migrate --force",
             "npm install --ignore-scripts",
             "npm run build"
+        ],
+        "format": [
+            "vendor/bin/rector",
+            "vendor/bin/pint"
+        ],
+        "check": [
+            "vendor/bin/rector --dry-run",
+            "vendor/bin/pint --test",
+            "@php artisan test"
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
